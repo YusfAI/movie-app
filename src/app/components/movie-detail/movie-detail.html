@@ -1,0 +1,143 @@
+@if (loading()) {
+<p class="state">Loading…</p>
+} @else if (movieService.selectedMovie(); as movie) {
+
+<section class="hero"
+    [style.background-image]="movie.backdrop_path ? 'url(' + imageUrl + '/w1280' + movie.backdrop_path + ')' : null">
+    <div class="hero-overlay">
+        <div class="button-container">
+            <button type="button" class="btn" (click)="backToMovieList()">
+                <fa-icon [icon]="faArrowLeft" /> Back to movies
+            </button>
+            <button type="button" class="btn" [class.active]="movieService.isInWishlist(movie.id)" (click)="addToWishlist()">
+                <fa-icon [icon]="movieService.isInWishlist(movie.id) ? faHeartCircleCheck : faHeart" />
+                {{ movieService.isInWishlist(movie.id) ? 'In wish list (remove)' : 'Add to wish list' }}
+            </button>
+        </div>
+
+        <div class="hero-content">
+            @if (movie.poster_path) {
+            <img class="poster" [src]="imageUrl + '/w500' + movie.poster_path" [alt]="movie.title">
+            }
+
+            <div class="hero-text">
+                <h1>{{ movie.title }}</h1>
+                @if (movie.original_title !== movie.title) {
+                <p class="original-title">{{ movie.original_title }}</p>
+                }
+                @if (movie.tagline) {
+                <p class="tagline">“{{ movie.tagline }}”</p>
+                }
+
+                <ul class="genres">
+                    @for (genre of movie.genres; track genre.id) {
+                    <li>{{ genre.name }}</li>
+                    }
+                </ul>
+
+                <div class="quick-stats">
+                    <span><fa-icon [icon]="faStar" /> {{ movie.vote_average | number:'1.1-1' }} / 10</span>
+                    <span><fa-icon [icon]="faUsers" /> {{ movie.vote_count | number }} votes</span>
+                    <span><fa-icon [icon]="faClock" /> {{ formatRuntime(movie.runtime) }}</span>
+                    <span><fa-icon [icon]="faCalendarDays" /> {{ movie.release_date | date:'mediumDate' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="content">
+    <section class="card overview">
+        <h2>Overview</h2>
+        <p>{{ movie.overview || 'No overview available.' }}</p>
+    </section>
+
+    <section class="card">
+        <h2>Information</h2>
+        <dl class="info-grid">
+            <div><dt>Status</dt><dd>{{ movie.status }}</dd></div>
+            <div><dt>Release date</dt><dd>{{ movie.release_date | date:'longDate' }}</dd></div>
+            <div><dt>Runtime</dt><dd>{{ formatRuntime(movie.runtime) }}</dd></div>
+            <div><dt>Original language</dt><dd>{{ movie.original_language | uppercase }}</dd></div>
+            <div><dt>Original title</dt><dd>{{ movie.original_title }}</dd></div>
+            <div><dt>Budget</dt><dd>{{ movie.budget ? (movie.budget | currency:'USD':'symbol':'1.0-0') : '—' }}</dd></div>
+            <div><dt>Revenue</dt><dd>{{ movie.revenue ? (movie.revenue | currency:'USD':'symbol':'1.0-0') : '—' }}</dd></div>
+            <div><dt>Popularity</dt><dd>{{ movie.popularity | number:'1.0-1' }}</dd></div>
+            <div><dt>Rating</dt><dd>{{ movie.vote_average | number:'1.1-1' }} ({{ movie.vote_count | number }} votes)</dd></div>
+            <div><dt>Origin country</dt><dd>{{ movie.origin_country.join(', ') || '—' }}</dd></div>
+            <div><dt>Adult</dt><dd>{{ movie.adult ? 'Yes' : 'No' }}</dd></div>
+            <div><dt>Video</dt><dd>{{ movie.video ? 'Yes' : 'No' }}</dd></div>
+            <div><dt>Movie ID</dt><dd>{{ movie.id }}</dd></div>
+            @if (movie.imdb_id) {
+            <div><dt>IMDb</dt><dd><a [href]="'https://www.imdb.com/title/' + movie.imdb_id" target="_blank" rel="noopener">{{ movie.imdb_id }}</a></dd></div>
+            }
+            @if (movie.homepage) {
+            <div><dt>Website</dt><dd><a [href]="movie.homepage" target="_blank" rel="noopener">Official site</a></dd></div>
+            }
+        </dl>
+    </section>
+
+    @if (movie.belongs_to_collection; as collection) {
+    <section class="card">
+        <h2>Collection</h2>
+        <div class="collection">
+            @if (collection.poster_path) {
+            <img [src]="imageUrl + '/w185' + collection.poster_path" [alt]="collection.name">
+            }
+            <p>{{ collection.name }}</p>
+        </div>
+    </section>
+    }
+
+    @if (movie.spoken_languages.length || movie.production_countries.length) {
+    <section class="card">
+        <h2>Languages &amp; countries</h2>
+        <div class="two-cols">
+            <div>
+                <h3>Spoken languages</h3>
+                <ul class="chips">
+                    @for (lang of movie.spoken_languages; track lang.iso_639_1) {
+                    <li>{{ lang.english_name }}@if (lang.name && lang.name !== lang.english_name) { ({{ lang.name }})}</li>
+                    }
+                </ul>
+            </div>
+            <div>
+                <h3>Production countries</h3>
+                <ul class="chips">
+                    @for (country of movie.production_countries; track country.iso_3166_1) {
+                    <li>{{ country.name }}</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </section>
+    }
+
+    @if (movie.production_companies.length) {
+    <section class="card">
+        <h2>Production companies</h2>
+        <ul class="companies">
+            @for (company of movie.production_companies; track company.id) {
+            <li>
+                <div class="logo">
+                    @if (company.logo_path) {
+                    <img [src]="imageUrl + '/w185' + company.logo_path" [alt]="company.name">
+                    } @else {
+                    <span class="no-logo">{{ company.name.charAt(0) }}</span>
+                    }
+                </div>
+                <strong>{{ company.name }}</strong>
+                @if (company.origin_country) {
+                <small>{{ company.origin_country }}</small>
+                }
+            </li>
+            }
+        </ul>
+    </section>
+    }
+</div>
+
+} @else {
+<p class="state">{{ error() ? 'Movie not found or unavailable.' : 'No movie selected.' }}
+    <a routerLink="/">Back to the list</a></p>
+}

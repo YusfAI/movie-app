@@ -1,0 +1,27 @@
+<div class="wishlist-header">
+    <h2>My Wish List ({{ movieService.wishlist().length }})</h2>
+    <button type="button" (click)="backToMovieList()">Back to movies</button>
+</div>
+
+@if (movieService.wishlist().length) {
+<div class="container">
+    @for (movie of movieService.wishlist(); track movie.id) {
+    <div class="movie-card" (click)="navigateTo(movie)">
+        @if (movie.poster_path) {
+        <img [src]="`https://image.tmdb.org/t/p/w500${movie.poster_path}`" [alt]="movie.title">
+        }
+        <div class="movie-detail">
+            <h3>{{ movie.title }}</h3>
+        </div>
+        <button type="button" class="remove" (click)="remove($event, movie)">
+            <fa-icon [icon]="faTrash" /> Remove
+        </button>
+    </div>
+    }
+</div>
+} @else {
+<div class="empty">
+    <fa-icon [icon]="faHeartCrack" />
+    <p>Your wish list is empty.</p>
+</div>
+}
