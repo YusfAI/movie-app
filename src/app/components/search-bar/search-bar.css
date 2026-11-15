@@ -34,3 +34,9 @@ input{
     border-radius: 20px;
     padding: 6px 14px;
 }
+
+.clear {
+    all: unset;
+    cursor: pointer;
+    color: white;
+}

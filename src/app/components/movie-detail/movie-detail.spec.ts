@@ -1,3 +1,4 @@
+import { testProviders } from '../../test-providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MovieDetail } from './movie-detail';
 
@@ -7,6 +8,7 @@ describe('MovieDetail', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: testProviders,
       imports: [MovieDetail],
     }).compileComponents();
 
