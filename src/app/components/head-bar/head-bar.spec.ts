@@ -1,3 +1,4 @@
+import { testProviders } from '../../test-providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeadBar } from './head-bar';
 
@@ -7,6 +8,7 @@ describe('HeadBar', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: testProviders,
       imports: [HeadBar],
     }).compileComponents();
 

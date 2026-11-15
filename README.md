@@ -1,59 +1,79 @@
-# MovieApp
+# 🎬 Movie App: My Movies Database
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
+An **Angular 22** single-page app for exploring films with **The Movie Database (TMDB) API**. You can browse what's in cinemas now, search the whole TMDB catalogue, open a detailed page for each movie, and keep a personal wish list that persists in the browser.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Now playing:** the current cinema releases, loaded from TMDB on the home page
+- **Live search:** searches the full TMDB catalogue as you type. It is debounced (350 ms), and a new keystroke cancels the previous request, so fast typing doesn't send a request per letter
+- **Movie detail page** (`/:id`): backdrop hero, poster, tagline, genres, rating, runtime, release date, budget and revenue, languages, production countries and companies, collection, and IMDb / official site links
+- **Wish list** (`/wishlist`): add or remove movies from the detail page; a counter in the header and a ♥ badge on cards. Saved in `localStorage`, so it survives a page refresh
+- Loading, error and empty states, plus keyboard navigation on movie cards
 
-```bash
-ng serve
-```
+## Tech stack
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| | |
+|---|---|
+| Framework | Angular 22 (standalone components, **signals**, `@if` / `@for` control flow) |
+| Data | TMDB REST API via `HttpClient` + RxJS (`debounceTime`, `switchMap`, `catchError`) |
+| Routing | Angular Router: `/`, `/wishlist`, `/:id` |
+| Icons | Font Awesome |
+| Tests | Vitest (`ng test`) with `HttpTestingController` |
 
-## Code scaffolding
+## Getting started
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Requires **Node.js 20+** and a free **TMDB API key** ([create one here](https://www.themoviedb.org/settings/api)).
 
 ```bash
-ng build
+git clone https://github.com/YusfAI/movie-app.git
+cd movie-app
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Put your API key in `src/environments/environment.development.ts` (and `environment.ts` for production builds):
 
-## Running unit tests
+```ts
+export const environment = {
+  Production: false,
+  api_key: 'YOUR_TMDB_API_KEY',
+  url_api: 'https://api.themoviedb.org/3/movie/now_playing',
+  url_movie_api: 'https://api.themoviedb.org/3/movie',
+  url_search_api: 'https://api.themoviedb.org/3/search/movie',
+};
+```
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Then:
 
 ```bash
-ng test
+npm start      # http://localhost:4200
+npm test       # unit tests
+npm run build  # production build in dist/movie-app
 ```
 
-## Running end-to-end tests
+## Architecture
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```
+src/app/
+├── services/movie-service.ts     # TMDB calls + shared state (signals) + wish list persistence
+├── interfaces/                   # Movie, MovieDetails, MovieResponse, WishlistMovie
+└── components/
+    ├── head-bar/                 # title + wish-list button with counter
+    ├── search-bar/               # debounced search (RxJS pipeline)
+    ├── movie-list/               # "now playing" / search results grid
+    ├── movie-detail/             # full movie page
+    └── wish-list/                # saved movies
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+State is shared through **signals** in `MovieService` (`movieList`, `searchQuery`, `loading`, `wishlist`…), so components read the same data without passing inputs down the tree.
 
-## Additional Resources
+> **Note on the API key:** in a frontend-only app the TMDB key is always visible in the browser. That's acceptable for TMDB's read-only v3 keys, but use your own key, and use a small backend proxy if you deploy publicly.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Possible next steps
+
+- Pagination / infinite scroll on results
+- Filter by genre and year
+- Cast & trailers on the detail page (`/movie/{id}/credits`, `/videos`)
+
+## Author
+
+**Youssef**, Business Intelligence student at IHEC Carthage · [GitHub](https://github.com/YusfAI)

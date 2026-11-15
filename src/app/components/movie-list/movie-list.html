@@ -1,12 +1,39 @@
+<h2 class="section-title">
+    @if (movieService.searchQuery(); as query) {
+        Results for “{{ query }}”
+    } @else {
+        Now playing
+    }
+</h2>
+
+@if (movieService.loading()) {
+    <p class="state">Loading…</p>
+} @else if (movieService.error()) {
+    <p class="state">Could not reach TMDB. Check your connection and try again.</p>
+} @else {
 <div class="container">
 @for (movie of movieService.movieList(); track movie.id) {
 
-    <div class="movie-card" (click)="navigateTo(movie)">
-        <img [src]="`https://image.tmdb.org/t/p/w500${movie.poster_path}`" [alt]="movie.title">
+    <div class="movie-card" tabindex="0" role="link" (click)="navigateTo(movie)" (keydown.enter)="navigateTo(movie)">
+        @if (movie.poster_path) {
+            <img [src]="`https://image.tmdb.org/t/p/w500${movie.poster_path}`" [alt]="movie.title" loading="lazy">
+        } @else {
+            <div class="no-poster">{{ movie.title }}</div>
+        }
+        @if (movieService.isInWishlist(movie.id)) {
+            <span class="in-wishlist" title="In your wish list"><fa-icon [icon]="faHeart" /></span>
+        }
         <div class="movie-detail">
             <h2>{{movie.title}}</h2>
+            <p class="meta">
+                <span><fa-icon [icon]="faStar" /> {{ movie.vote_average | number:'1.1-1' }}</span>
+                @if (movie.release_date) { <span>{{ movie.release_date.slice(0, 4) }}</span> }
+            </p>
         </div>
     </div>
 
+} @empty {
+    <p class="state">No movie found.</p>
 }
 </div>
+}

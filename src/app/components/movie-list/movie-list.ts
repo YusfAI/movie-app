@@ -1,27 +1,42 @@
-import { Component, inject } from '@angular/core';
-import { MovieService } from '../../services/movie-service';
-import { OnInit } from '@angular/core';
-import { Movie } from '../../interfaces/movie';
+import { Component, inject, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faHeart, faStar } from '@fortawesome/free-solid-svg-icons';
+import { Movie } from '../../interfaces/movie';
+import { MovieService } from '../../services/movie-service';
 
 @Component({
-  imports: [],
+  imports: [DecimalPipe, FontAwesomeModule],
   selector: 'app-movie-list',
   styleUrl: './movie-list.css',
   templateUrl: './movie-list.html',
 })
 export class MovieList implements OnInit {
-  router=inject(Router)
-  movieService=inject(MovieService);
-  
+  readonly router = inject(Router);
+  readonly movieService = inject(MovieService);
+
+  readonly faStar = faStar;
+  readonly faHeart = faHeart;
+
   ngOnInit(): void {
-      this.movieService.getMovieList().subscribe(response=>{
-        this.movieService.movieList.set(response)
-  });
-      
+    // Keep the current search results when coming back from a detail page
+    if (this.movieService.searchQuery() || this.movieService.movieList().length) return;
+
+    this.movieService.loading.set(true);
+    this.movieService.getMovieList().subscribe({
+      next: movies => {
+        this.movieService.movieList.set(movies);
+        this.movieService.loading.set(false);
+      },
+      error: () => {
+        this.movieService.error.set(true);
+        this.movieService.loading.set(false);
+      },
+    });
   }
 
-  navigateTo(movie : Movie){
-    this.router.navigate(['/',movie.id])
+  navigateTo(movie: Movie) {
+    this.router.navigate(['/', movie.id]);
   }
 }

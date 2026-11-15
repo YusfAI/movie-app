@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { map, Observable, shareReplay } from 'rxjs';
 import { MovieResponse } from '../interfaces/movie-response';
 import { Movie } from '../interfaces/movie';
@@ -18,14 +18,25 @@ export class MovieService {
     private readonly url=environment.url_api
     private readonly key=environment.api_key
     private readonly movieUrl=environment.url_movie_api
+    private readonly searchUrl=environment.url_search_api
 
 
     public movieList=signal<Movie[]>([]);
+    /** Current search text ('' = showing "now playing"). */
+    public searchQuery=signal('');
+    public loading=signal(false);
+    public error=signal(false);
     public selectedMovie=signal<MovieDetails|null>(null);
     public wishlist=signal<WishlistMovie[]>(this.loadWishlist());
 
     getMovieList():Observable<Movie[]>{
         return this.http.get<MovieResponse>(`${this.url}?api_key=${this.key}`).pipe(map(response=>response.results),shareReplay({bufferSize:1,refCount:false}))  
+    }
+
+    /** Full-text search across the whole TMDB catalogue. */
+    searchMovies(query:string):Observable<Movie[]>{
+        const params=new HttpParams().set('api_key',this.key).set('query',query).set('include_adult','false')
+        return this.http.get<MovieResponse>(this.searchUrl,{params}).pipe(map(response=>response.results))
     }
 
     getMovieById(id:number):Observable<MovieDetails>{
